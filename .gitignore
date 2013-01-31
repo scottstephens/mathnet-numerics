@@ -20,3 +20,4 @@ UpgradeLog.htm
 *.vsdoc
 *.XML
 *.so
+src/UnitTests/test-results
