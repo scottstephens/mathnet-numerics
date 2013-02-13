@@ -21,3 +21,4 @@ UpgradeLog.htm
 *.XML
 *.so
 src/UnitTests/test-results
+*.userprefs
