@@ -66,7 +66,30 @@ namespace MathNet.Numerics
             CheckDistributionParameters = true;
             ThreadSafeRandomNumberGenerators = true;
             DisableParallelization = false;
+
+            #if PORTABLE
             LinearAlgebraProvider = new ManagedLinearAlgebraProvider();
+            #else
+            try
+            {
+                const string name = "MathNetNumericsLAProvider";
+                var value = Environment.GetEnvironmentVariable(name);
+                switch (value != null ? value.ToUpper() : string.Empty)
+                {
+                    case "MKL":
+                        LinearAlgebraProvider = new MathNet.Numerics.Algorithms.LinearAlgebra.Mkl.MklLinearAlgebraProvider();
+                        break;
+                    default:
+                        LinearAlgebraProvider = new ManagedLinearAlgebraProvider();
+                        break;
+                }
+            }
+            catch
+            {
+                // We don't care about any failures here at all
+                LinearAlgebraProvider = new ManagedLinearAlgebraProvider();
+            }
+            #endif
         }
 
         /// <summary>

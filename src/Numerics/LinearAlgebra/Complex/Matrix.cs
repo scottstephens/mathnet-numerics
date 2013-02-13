@@ -93,7 +93,7 @@ namespace MathNet.Numerics.LinearAlgebra.Complex
         /// <returns>The Frobenius norm of this matrix.</returns>
         public override Complex FrobeniusNorm()
         {
-            var transpose = Transpose();
+            var transpose = ConjugateTranspose();
             var aat = this * transpose;
 
             var norm = 0.0;
@@ -302,7 +302,7 @@ namespace MathNet.Numerics.LinearAlgebra.Complex
             {
                 for (var j = 0; j != ColumnCount; j++)
                 {
-                    result[i, j] = -At(i, j);
+                    result.At(i, j, -At(i, j));
                 }
             }
         }
