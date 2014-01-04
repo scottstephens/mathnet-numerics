@@ -43,6 +43,7 @@ namespace MathNet.Numerics.Optimization
                         throw new EvaluationException("Objective function evaluation failed.", this.InnerEvaluation, e);
                     }
                     this.Checker.ValueChecker(this.InnerEvaluation);
+					this.ValueChecked = true;
                 }
                 return this.InnerEvaluation.Value;
             }
@@ -65,6 +66,7 @@ namespace MathNet.Numerics.Optimization
                         throw new EvaluationException("Objective gradient evaluation failed.", this.InnerEvaluation, e);
                     }
                     this.Checker.GradientChecker(this.InnerEvaluation);
+					this.GradientChecked = true;
                 }
                 return this.InnerEvaluation.Gradient;
             }
@@ -87,6 +89,7 @@ namespace MathNet.Numerics.Optimization
                         throw new EvaluationException("Objective hessian evaluation failed.", this.InnerEvaluation, e);
                     }
                     this.Checker.HessianChecker(InnerEvaluation);
+					this.HessianChecked = true;
                 }
                 return this.InnerEvaluation.Hessian;
             }
