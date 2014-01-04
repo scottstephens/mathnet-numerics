@@ -108,7 +108,7 @@ namespace MathNet.Numerics.Optimization
 					break;
             }
 
-            if (iterations == this.MaximumIterations)
+			if (iterations == this.MaximumIterations && current_exit_condition == ExitCondition.None)
                 throw new MaximumIterationsException(String.Format("Maximum iterations ({0}) reached.", this.MaximumIterations));
 
 			return new MinimizationWithLineSearchOutput(candidate_point, iterations, current_exit_condition, total_line_search_steps, iterations_with_nontrivial_line_search);
