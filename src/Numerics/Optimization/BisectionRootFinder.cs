@@ -13,14 +13,18 @@ namespace MathNet.Numerics.Optimization
         public double LowerExpansionFactor { get; set; }
         public double UpperExpansionFactor { get; set; }
         public int MaxExpansionSteps { get; set; }
+        public bool AllowInfiniteObjectiveValues { get; set; }
+        public int MaxBisectionSteps { get; set; }
 
-        public BisectionRootFinder(double objective_tolerance=1e-5, double x_tolerance=1e-5, double lower_expansion_factor=-1.0, double upper_expansion_factor=-1.0, int max_expansion_steps=10)
+        public BisectionRootFinder(double objective_tolerance=1e-5, double x_tolerance=1e-5, double lower_expansion_factor=-1.0, double upper_expansion_factor=-1.0, int max_expansion_steps=10, bool allow_infinite_objective_values=false, int max_bisection_steps=1000)
         {
             this.ObjectiveTolerance = objective_tolerance;
             this.XTolerance = x_tolerance;
             this.LowerExpansionFactor = lower_expansion_factor;
             this.UpperExpansionFactor = upper_expansion_factor;            
             this.MaxExpansionSteps = max_expansion_steps;
+            this.AllowInfiniteObjectiveValues = allow_infinite_objective_values;
+            this.MaxBisectionSteps = max_bisection_steps;
         } 
 
         public double FindRoot(Func<double, double> objective_function, double lower_bound, double upper_bound)
@@ -62,7 +66,8 @@ namespace MathNet.Numerics.Optimization
             if (Math.Sign(lower_val) == Math.Sign(upper_val) && expansion_steps == this.MaxExpansionSteps)
                 throw new MaximumIterationsException("Could not bound root in maximum expansion iterations.");
 
-            while (Math.Abs(upper_val - lower_val) > 0.5 * this.ObjectiveTolerance || Math.Abs(upper_bound - lower_bound) > 0.5 * this.XTolerance)
+            int bisection_steps = 0;
+            while ( (Math.Abs(upper_val - lower_val) > 0.5 * this.ObjectiveTolerance || Math.Abs(upper_bound - lower_bound) > 0.5 * this.XTolerance) && bisection_steps < this.MaxBisectionSteps)
             {
                 double midpoint = 0.5 * (upper_bound + lower_bound);
                 double midval = objective_function(midpoint);
@@ -82,20 +87,20 @@ namespace MathNet.Numerics.Optimization
                 {
                     return midpoint;
                 }
+
+                bisection_steps += 1;
             }
 
-            return 0.5 * (lower_bound + upper_bound);
+            if (Math.Abs(upper_val - lower_val) <= 0.5 * this.ObjectiveTolerance && Math.Abs(upper_bound - lower_bound) <= 0.5 * this.XTolerance)
+                return 0.5 * (lower_bound + upper_bound);
+            else
+                throw new MaximumIterationsException("Bisection did not find root in interval; function is probably non-monotone or discontinuous.");
         }
 
         private void ValidateEvaluation(double output, double input)
         {
-            if (!IsFinite(output))
+            if (Double.IsNaN(output) || (!this.AllowInfiniteObjectiveValues && Double.IsInfinity(output)))
                 throw new Exception(String.Format("Objective function returned non-finite result: f({0}) = {1}", input, output));
-        }
-
-        private static bool IsFinite(double x)
-        {
-            return !(Double.IsInfinity(x) || Double.IsNaN(x));
         }
     }
 }
