@@ -36,7 +36,7 @@ namespace MathNet.Numerics.Optimization
                 return new MinimizationOutput(initial_eval, 0, current_exit_condition);
             
             // Set up line search algorithm
-            var line_searcher = new WeakWolfeLineSearch(1e-4, 0.9,this.ParameterTolerance, max_iterations:1000);
+            var line_searcher = new WeakWolfeLineSearch(1e-4, 0.9,Math.Max(this.ParameterTolerance,1e-10), max_iterations:1000);
 
             // Declare state variables
             IEvaluation candidate_point, previous_point;
@@ -66,6 +66,7 @@ namespace MathNet.Numerics.Optimization
             step_size = result.FinalStep;
 
             // Subsequent steps
+            Matrix<double> I = LinearAlgebra.Double.DiagonalMatrix.Identity(initial_guess.Count);
             int iterations;
             int total_line_search_steps = result.Iterations;
             int iterations_with_nontrivial_line_search = result.Iterations > 0 ? 0 : 1;
@@ -76,15 +77,20 @@ namespace MathNet.Numerics.Optimization
 
                 double sy = step * y;
                 inverse_pseudo_hessian = inverse_pseudo_hessian + ((sy + y * inverse_pseudo_hessian * y) / Math.Pow(sy, 2.0)) * step.OuterProduct(step) - ( (inverse_pseudo_hessian * y.ToColumnMatrix())*step.ToRowMatrix() + step.ToColumnMatrix()*(y.ToRowMatrix() * inverse_pseudo_hessian)) * (1.0 / sy);
-
                 search_direction = -inverse_pseudo_hessian * candidate_point.Gradient;
 
-                if (search_direction * candidate_point.Gradient >= -this.GradientTolerance*this.GradientTolerance)
+                if (search_direction * candidate_point.Gradient >= 0.0)
                 {
                     search_direction = -candidate_point.Gradient;
                     inverse_pseudo_hessian = LinearAlgebra.Double.DiagonalMatrix.Identity(initial_guess.Count);
                     steepest_descent_resets += 1;
                 }
+                //else if (search_direction * candidate_point.Gradient >= -this.GradientTolerance*this.GradientTolerance)
+                //{
+                //    search_direction = -candidate_point.Gradient;
+                //    inverse_pseudo_hessian = LinearAlgebra.Double.DiagonalMatrix.Identity(initial_guess.Count);
+                //    steepest_descent_resets += 1;
+                //}
 
                 try
                 {
