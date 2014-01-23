@@ -23,7 +23,6 @@ namespace MathNet.Numerics.UnitTests.OptimizationTests
 
             Assert.That(Math.Abs(result.MinimizingPoint[0] - 1.0), Is.LessThan(1e-3));
             Assert.That(Math.Abs(result.MinimizingPoint[1] - 1.0), Is.LessThan(1e-3));
-			Thread.Sleep(10*1000);
         }
 
         [Test]
