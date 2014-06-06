@@ -746,6 +746,7 @@
     <Compile Include="OptimizationTests\TestBfgsMinimizer.cs" />
     <Compile Include="OptimizationTests\TestBisectionRootFinder.cs" />
     <Compile Include="OptimizationTests\TestConjugateGradientMinimizer.cs" />
+    <Compile Include="OptimizationTests\TestGoldenSectionMinimizer.cs" />
     <Compile Include="OptimizationTests\TestNewtonMinimizer.cs" />
     <Compile Include="OptimizationTests\TestRosenbrockFunction.cs" />
     <Compile Include="PermutationTest.cs" />
