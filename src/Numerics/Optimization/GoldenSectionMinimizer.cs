@@ -51,9 +51,7 @@ namespace MathNet.Numerics.Optimization
                 }
 
                 middle_point_x = lower_bound + (upper_bound - lower_bound) / (1 + _golden_ratio);
-                lower = objective.Evaluate(lower_bound);
                 middle = objective.Evaluate(middle_point_x);
-                upper = objective.Evaluate(upper_bound);
 
                 expansion_steps += 1;
             }
