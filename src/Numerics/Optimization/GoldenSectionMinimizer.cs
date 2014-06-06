@@ -9,11 +9,17 @@ namespace MathNet.Numerics.Optimization
     {
         public double XTolerance { get; set; }
         public int MaximumIterations { get; set; }
+        public int MaximumExpansionSteps { get; set; }
+        public double LowerExpansionFactor { get; set; }
+        public double UpperExpansionFactor { get; set; }
 
-        public GoldenSectionMinimizer(double x_tolerance=1e-5, int max_iterations=1000)
+        public GoldenSectionMinimizer(double x_tolerance=1e-5, int max_iterations=1000, int max_expansion_steps=10, double lower_expansion_factor = 2.0, double upper_expansion_factor = 2.0)
         {
             this.XTolerance = x_tolerance;
             this.MaximumIterations = max_iterations;
+            this.MaximumExpansionSteps = max_expansion_steps;
+            this.LowerExpansionFactor = lower_expansion_factor;
+            this.UpperExpansionFactor = upper_expansion_factor;
         }
 
         public MinimizationOutput1D FindMinimum(IObjectiveFunction1D objective, double lower_bound, double upper_bound)
@@ -21,13 +27,36 @@ namespace MathNet.Numerics.Optimization
             if (!(objective is ObjectiveChecker1D))
                 objective = new ObjectiveChecker1D(objective, this.ValueChecker, null, null);
 
+            if (upper_bound <= lower_bound)
+                throw new OptimizationException("Lower bound must be lower than upper bound.");
+
             double middle_point_x = lower_bound + (upper_bound - lower_bound) / (1 + _golden_ratio);
             IEvaluation1D lower = objective.Evaluate(lower_bound);
             IEvaluation1D middle = objective.Evaluate(middle_point_x);
             IEvaluation1D upper = objective.Evaluate(upper_bound);
-            
-            if (upper_bound <= lower_bound)
-                throw new OptimizationException("Lower bound must be lower than upper bound.");
+
+            int expansion_steps = 0;
+            while ( (expansion_steps < this.MaximumExpansionSteps) && (upper.Value < middle.Value || lower.Value < middle.Value))
+            {
+                if (lower.Value < middle.Value)
+                {
+                    lower_bound = 0.5 * (upper_bound + lower_bound) - this.LowerExpansionFactor*0.5*(upper_bound - lower_bound);
+                    lower = objective.Evaluate(lower_bound);
+                }
+
+                if (upper.Value < middle.Value)
+                {
+                    upper_bound = 0.5 * (upper_bound + lower_bound) + this.UpperExpansionFactor*0.5*(upper_bound - lower_bound);
+                    upper = objective.Evaluate(upper_bound);
+                }
+
+                middle_point_x = lower_bound + (upper_bound - lower_bound) / (1 + _golden_ratio);
+                lower = objective.Evaluate(lower_bound);
+                middle = objective.Evaluate(middle_point_x);
+                upper = objective.Evaluate(upper_bound);
+
+                expansion_steps += 1;
+            }
 
             if (upper.Value < middle.Value || lower.Value < middle.Value)
                 throw new OptimizationException("Lower and upper bounds do not necessarily bound a minimum.");
